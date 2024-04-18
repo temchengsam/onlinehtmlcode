@@ -47,7 +47,7 @@
     #fileInput {
       display: none;
     }
-    #fileInputLabel, #aboutButton {
+    #fileInputLabel, #aboutButton, #selectHtmlButton {
       display: inline-block;
       margin-bottom: 10px;
       cursor: pointer;
@@ -64,11 +64,12 @@
 <body>
   <div id="editor-container">
     <div id="editor"></div>
+    <div id="suggestionContainer"></div>
     <div id="drag-handle"></div>
     <div id="htmlOptionContainer">
       <label for="htmlOption">選擇 HTML 版本：</label>
       <select id="htmlOption" onchange="changeHtmlOption()">
-        <option value="html">HTML 標準</option>
+        <option value="html">HTML</option>
         <option value="html5">HTML:5</option>
         <option value="htmlxml">HTML:XML</option>
       </select>
@@ -79,6 +80,7 @@
       <input type="file" id="fileInput" accept=".html" onchange="loadFile(event)">
       <label for="fileInput" id="fileInputLabel">導入 HTML 檔案</label>
       <button id="aboutButton" onclick="showAbout()">關於</button>
+      <button id="selectHtmlButton" onclick="showHtmlOptions()">選擇 HTML</button>
     </div>
   </div>
   <div id="preview-container">
@@ -117,18 +119,45 @@
       isDragging = false;
     });
 
-    editor.session.on('change', function() {
-      var value = editor.getValue();
-      if (value.includes("html")) {
-        htmlOptionContainer.style.display = "block";
-      } else {
-        htmlOptionContainer.style.display = "none";
-      }
+    function suggestTags() {
+      var value = editor.getValue().toLowerCase();
+      var lastWord = value.trim().split(/\s+/).pop();
+      var suggestions = ["h1", "h2", "h3", "h4", "h5", "h6", "p", "div", "span", "a", "img", "ul", "ol", "li"];
 
+      var suggestedTags = suggestions.filter(function(tag) {
+        return tag.startsWith(lastWord);
+      });
+
+      if (suggestedTags.length > 0) {
+        suggestionContainer.innerHTML = "Suggested tags: " + suggestedTags.map(function(tag) {
+          return `<span class="suggestion" onclick="insertTag('${tag}')">${tag}</span>`;
+        }).join(" ");
+      } else {
+        suggestionContainer.innerHTML = "";
+      }
+    }
+
+    function insertTag(tag) {
+      var value = editor.getValue();
+      var position = editor.selection.getCursor();
+      var newValue = value.slice(0, position.column) + `<${tag}></${tag}>` + value.slice(position.column);
+      editor.setValue(newValue);
+      editor.focus();
+      suggestTags();
+    }
+
+    editor.session.on('change', function() {
+      suggestTags();
+      updatePreview();
+    });
+
+    function updatePreview() {
+      var value = editor.getValue();
+      
       previewFrame.open();
       previewFrame.write(value);
       previewFrame.close();
-    });
+    }
 
     function changeHtmlOption() {
       var htmlOption = document.getElementById("htmlOption").value;
@@ -182,6 +211,11 @@
 語言: zh-TW
 前提:沒有前提
 最後給個 good，愛你yo`);
+    }
+
+    function showHtmlOptions() {
+      htmlOptionContainer.style.display = "block";
+      selectHtmlButton.style.display = "none";
     }
   </script>
 </body>
