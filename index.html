@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Online Code Editor</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: row;
+      height: 100vh;
+      position: relative;
+    }
+    #editor-container, #preview-container {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+    }
+    #editor, #preview {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+    }
+    #drag-handle {
+      width: 5px;
+      background-color: #ccc;
+      cursor: col-resize;
+      z-index: 999;
+    }
+    #htmlOptionContainer {
+      display: none;
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      z-index: 999;
+    }
+    #modeToggleContainer {
+      position: absolute;
+      bottom: 10px;
+      right: 10px;
+      z-index: 999;
+    }
+    #fileInput {
+      display: none;
+    }
+    #fileInputLabel, #aboutButton {
+      display: inline-block;
+      margin-bottom: 10px;
+      cursor: pointer;
+      background-color: #007bff;
+      color: #fff;
+      padding: 5px 10px;
+      border-radius: 5px;
+    }
+    #aboutButton {
+      margin-right: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div id="editor-container">
+    <div id="editor"></div>
+    <div id="drag-handle"></div>
+    <div id="htmlOptionContainer">
+      <label for="htmlOption">選擇 HTML 版本：</label>
+      <select id="htmlOption" onchange="changeHtmlOption()">
+        <option value="html">HTML 標準</option>
+        <option value="html5">HTML:5</option>
+        <option value="htmlxml">HTML:XML</option>
+      </select>
+    </div>
+    <div id="modeToggleContainer">
+      <button onclick="toggleDarkMode()">暗黑模式</button>
+      <button onclick="toggleLightMode()">亮光模式</button>
+      <input type="file" id="fileInput" accept=".html" onchange="loadFile(event)">
+      <label for="fileInput" id="fileInputLabel">導入 HTML 檔案</label>
+      <button id="aboutButton" onclick="showAbout()">關於</button>
+    </div>
+  </div>
+  <div id="preview-container">
+    <iframe id="preview"></iframe>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.12/ace.js"></script>
+  <script>
+    var editor = ace.edit("editor");
+    editor.setTheme("ace/theme/twilight");
+    editor.session.setMode("ace/mode/html");
+
+    var previewFrame = document.getElementById("preview").contentWindow.document;
+
+    var dragHandle = document.getElementById("drag-handle");
+    var editorContainer = document.getElementById("editor-container");
+    var previewContainer = document.getElementById("preview-container");
+    var htmlOptionContainer = document.getElementById("htmlOptionContainer");
+
+    var isDragging = false;
+
+    dragHandle.addEventListener('mousedown', function(event) {
+      isDragging = true;
+    });
+
+    document.addEventListener('mousemove', function(event) {
+      if (isDragging) {
+        var mouseX = event.pageX;
+        var editorWidth = mouseX - editorContainer.getBoundingClientRect().left;
+        editorContainer.style.flexBasis = editorWidth + 'px';
+        previewContainer.style.flexBasis = `calc(100% - ${editorWidth}px)`;
+      }
+    });
+
+    document.addEventListener('mouseup', function(event) {
+      isDragging = false;
+    });
+
+    editor.session.on('change', function() {
+      var value = editor.getValue();
+      if (value.includes("html")) {
+        htmlOptionContainer.style.display = "block";
+      } else {
+        htmlOptionContainer.style.display = "none";
+      }
+
+      previewFrame.open();
+      previewFrame.write(value);
+      previewFrame.close();
+    });
+
+    function changeHtmlOption() {
+      var htmlOption = document.getElementById("htmlOption").value;
+      var htmlTemplate = '';
+
+      switch (htmlOption) {
+        case 'html':
+          htmlTemplate = '<!DOCTYPE html>\n<html lang="en">\n<head>\n    <meta charset="UTF-8">\n    <meta name="viewport" content="width=device-width, initial-scale=1.0">\n    <title>Document</title>\n</head>\n<body>\n    \n</body>\n</html>';
+          break;
+        case 'html5':
+          htmlTemplate = '<!DOCTYPE html>\n<html lang="en">\n<head>\n    <meta charset="UTF-8">\n    <meta name="viewport" content="width=device-width, initial-scale=1.0">\n    <title>Document</title>\n</head>\n<body>\n    \n</body>\n</html>';
+          break;
+        case 'htmlxml':
+          htmlTemplate = '<html xmlns="http://www.w3.org/1999/xhtml"></html>';
+          break;
+        default:
+          htmlTemplate = '<!DOCTYPE html>\n<html lang="en">\n<head>\n    <meta charset="UTF-8">\n    <meta name="viewport" content="width=device-width, initial-scale=1.0">\n    <title>Document</title>\n</head>\n<body>\n    \n</body>\n</html>';
+      }
+
+      editor.setValue(htmlTemplate);
+
+      // 選擇完後隱藏選項框
+      htmlOptionContainer.style.display = "none";
+    }
+
+    function toggleDarkMode() {
+      editor.setTheme("ace/theme/twilight");
+    }
+
+    function toggleLightMode() {
+      editor.setTheme("ace/theme/chrome");
+    }
+
+    function loadFile(event) {
+      var file = event.target.files[0];
+      var reader = new FileReader();
+
+      reader.onload = function(event) {
+        var contents = event.target.result;
+        editor.setValue(contents);
+      };
+
+      reader.readAsText(file);
+    }
+
+    function showAbout() {
+      alert(`創作人: 田田 (本名: tem_cheng_sam)
+思想人: 田田
+碼農: ChatGPT (chat.openai.com)
+用法: visual studio code差不多
+語言: zh-TW
+前提:沒有前提
+最後給個 good，愛你yo`);
+    }
+  </script>
+</body>
+</html>
