@@ -47,7 +47,7 @@
     #fileInput {
       display: none;
     }
-    #fileInputLabel, #aboutButton, #selectHtmlButton, #exportHtmlButton {
+    #fileInputLabel, #aboutButton, #selectHtmlButton {
       display: inline-block;
       margin-bottom: 10px;
       cursor: pointer;
@@ -60,9 +60,6 @@
       margin-right: 10px;
     }
     #selectHtmlButton {
-      margin-right: 10px;
-    }
-    #exportHtmlButton {
       margin-right: 10px;
     }
     #hint {
@@ -94,7 +91,6 @@
       <input type="file" id="fileInput" accept=".html" onchange="loadFile(event)">
       <label for="fileInput" id="fileInputLabel">導入 HTML 檔案</label>
       <button id="aboutButton" onclick="showAbout()">關於</button>
-      <button id="exportHtmlButton" onclick="exportHtml()">倒出 HTML</button>
     </div>
   </div>
   <div id="preview-container">
@@ -127,7 +123,7 @@
     document.addEventListener('mousemove', function(event) {
       if (isDragging) {
         var mouseX = event.pageX;
-        var editorWidth = mouseX - editorContainer的boundingClientRect().left;
+        var editorWidth = mouseX - editorContainer.getBoundingClientRect().left;
         editorContainer.style.flexBasis = editorWidth + 'px';
         previewContainer.style.flexBasis = `calc(100% - ${editorWidth}px)`;
       }
@@ -143,7 +139,7 @@
       var suggestions = ["h1", "h2", "h3", "h4", "h5", "h6", "p", "div", "span", "a", "img", "ul", "ol", "li"];
 
       var suggestedTags = suggestions.filter(function(tag) {
-        return tag.startswith(lastWord);
+        return tag.startsWith(lastWord);
       });
 
       if (suggestedTags.length > 0) {
@@ -183,16 +179,16 @@
 
       switch (htmlOption) {
         case 'html':
-          htmlTemplate = '<!DOCTYPE html>\n<html lang="en">\n<head>\n    <meta charset="UTF-8">\n    <meta name="viewport" content="宽设备宽度，最小缩放级别，最大缩放级别，等'>\n    <title>Document</title>\n</head>\n<body>\n    \n</body>\n</html>';
+          htmlTemplate = '<!DOCTYPE html>\n<html lang="en">\n<head>\n    <meta charset="UTF-8">\n    <meta name="viewport" content="width=device-width, initial-scale=1.0">\n    <title>Document</title>\n</head>\n<body>\n    \n</body>\n</html>';
           break;
         case 'html5':
-          htmlTemplate = '<!DOCTYPE html>\n<html lang="en">\n<head>\n    <meta charset="UTF-8">\n    <meta name="viewport" content="宽设备宽度，最小缩放级别，最大缩放级别，等">\n    <title>Document</title>\n</head>\n<body>\n    \n</body>\n</html>';
+          htmlTemplate = '<!DOCTYPE html>\n<html lang="en">\n<head>\n    <meta charset="UTF-8">\n    <meta name="viewport" content="width=device-width, initial-scale=1.0">\n    <title>Document</title>\n</head>\n<body>\n    \n</body>\n</html>';
           break;
         case 'htmlxml':
           htmlTemplate = '<html xmlns="http://www.w3.org/1999/xhtml"></html>';
           break;
         default:
-          htmlTemplate = '<!DOCTYPE html>\n<html lang="en">\n<head>\n    <meta charset="UTF-8">\n    <meta name="viewport" content="宽设备宽度，最小缩放级别，最大缩放级别，等">\n    <title>Document</title>\n</head>\n<body>\n    \n</body>\n</html>';
+          htmlTemplate = '<!DOCTYPE html>\n<html lang="en">\n<head>\n    <meta charset="UTF-8">\n    <meta name="viewport" content="width=device-width, initial-scale=1.0">\n    <title>Document</title>\n</head>\n<body>\n    \n</body>\n</html>';
       }
 
       editor.setValue(htmlTemplate);
@@ -209,7 +205,7 @@
     }
 
     function toggleLightMode() {
-      editor setTheme("ace/theme/chrome");
+      editor.setTheme("ace/theme/chrome");
     }
 
     function loadFile(event) {
@@ -223,19 +219,6 @@
       };
 
       reader.readAsText(file);
-    }
-
-    function exportHtml() {
-      var htmlContent = editor.getValue();
-      var blob = new Blob([htmlContent], { type: 'text/html' });
-      var url = URL.createObjectURL(blob);
-      var a = document.createElement('a');
-      a.href = url;
-      a.download = 'export.html';
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
     }
 
     function showAbout() {
